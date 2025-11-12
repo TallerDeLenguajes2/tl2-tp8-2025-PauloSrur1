@@ -98,9 +98,9 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         // POST: /Productos/Delete/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public IActionResult DeleteConfirmed(int IdProducto)
         {
-            _productoRepository.Eliminar(id);
+            _productoRepository.Eliminar(IdProducto);
             return RedirectToAction(nameof(Index));
         }
     }

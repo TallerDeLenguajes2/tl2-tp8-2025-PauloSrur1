@@ -143,6 +143,20 @@ public class PresupuestoRepository
             comando.ExecuteNonQuery();
         }
 
+        // Modificar presupuesto existente
+        public void Modificar(Presupuesto presupuesto)
+        {
+            using var conexion = new SqliteConnection(cadenaConexion);
+            conexion.Open();
+
+            string sql = $"UPDATE {tablaPres} SET {colPresNombre} = @nombre, {colPresFecha} = @fecha WHERE {colPresId} = @id";
+            using var comando = new SqliteCommand(sql, conexion);
+            comando.Parameters.AddWithValue("@nombre", presupuesto.NombreDestinatario);
+            comando.Parameters.AddWithValue("@fecha", presupuesto.FechaCreacion);
+            comando.Parameters.AddWithValue("@id", presupuesto.IdPresupuesto);
+            comando.ExecuteNonQuery();
+        }
+
         // Eliminar presupuesto
         public bool Eliminar(int id)
         {

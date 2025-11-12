@@ -1,0 +1,25 @@
+@model Models.Presupuesto
+@{
+    ViewData["Title"] = "Eliminar presupuesto";
+}
+
+<h1 class="mb-3 text-danger">¿Eliminar este presupuesto?</h1>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Id</dt>
+      <dd class="col-sm-9">@Model.IdPresupuesto</dd>
+      <dt class="col-sm-3">Destinatario</dt>
+      <dd class="col-sm-9">@Model.NombreDestinatario</dd>
+      <dt class="col-sm-3">Fecha</dt>
+      <dd class="col-sm-9">@Model.FechaCreacion.ToString("yyyy-MM-dd")</dd>
+    </dl>
+  </div>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+  <input type="hidden" asp-for="IdPresupuesto" />
+  <button type="submit" class="btn btn-danger">Eliminar</button>
+  <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

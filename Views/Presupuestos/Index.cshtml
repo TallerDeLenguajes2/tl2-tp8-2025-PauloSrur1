@@ -29,9 +29,13 @@ else
                 <td>@p.FechaCreacion.ToString("yyyy-MM-dd")</td>
                 <td class="text-nowrap">
                     <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@p.IdPresupuesto">Ver</a>
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@p.IdPresupuesto">Editar</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@p.IdPresupuesto">Eliminar</a>
                 </td>
             </tr>
         }
         </tbody>
     </table>
 }
+
+<a class="btn btn-primary" asp-action="Create">Nuevo presupuesto</a>
