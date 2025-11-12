@@ -1,0 +1,35 @@
+# Build outputs
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+*.log
+TestResults/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet (local packages folder, por si existiera)
+packages/
+*.nupkg
+*.snupkg
+
+# Sistema operativo
+[Dd]esktop.ini
+[Tt]humbs.db
+.DS_Store
+
+# SQLite side files (no ignores la DB en sí si la entregás)
+*.db-wal
+*.db-shm
+
+# Cobertura (si la usás)
+coverage/
+*.coverage
+*.coveragexml
