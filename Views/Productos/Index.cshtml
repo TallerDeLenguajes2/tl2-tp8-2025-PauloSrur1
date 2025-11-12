@@ -17,6 +17,7 @@ else
                 <th>Id</th>
                 <th>Descripción</th>
                 <th class="text-end">Precio</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +27,10 @@ else
                 <td>@p.IdProducto</td>
                 <td>@p.Descripcion</td>
                 <td class="text-end">@p.Precio</td>
+                <td class="text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@p.IdProducto">Editar</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@p.IdProducto">Eliminar</a>
+                </td>
             </tr>
         }
         </tbody>
@@ -33,5 +38,4 @@ else
 }
 
 <a class="btn btn-primary" asp-action="Create">Nuevo producto</a>
-<a class="btn btn-primary" asp-action="DeleteConfirmed">Eliminar producto</a>
-<a class="btn btn-primary" asp-action="Edit">Editar producto</a>
+
