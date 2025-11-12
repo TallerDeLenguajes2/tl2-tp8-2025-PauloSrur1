@@ -11,4 +11,11 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
   </ItemGroup>
 
+  <!-- Asegura que la base de datos se copie al directorio de salida -->
+  <ItemGroup>
+    <None Include="Tienda.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -20,6 +20,12 @@ public class PresupuestoRepository
         private string colDetProdId = "idProducto";
         private string colDetCant = "cantidad";
 
+        // Información de la tabla de productos para JOINs de detalle
+        private string tablaProd = "Productos";
+        private string colProdId = "id"; // fallbacks: idProducto
+        private string colProdDesc = "descripcion"; // fallbacks: Descripcion, nombre
+        private string colProdPrecio = "precio"; // fallbacks: Precio, precioUnitario
+
         public PresupuestoRepository()
         {
             DetectSchema();
@@ -39,7 +45,7 @@ public class PresupuestoRepository
                 while (r.Read()) names.Add(r.GetString(0));
                 if (names.Contains(desired)) return desired;
                 // Variantes comunes
-                foreach (var opt in new[]{ "presupuestos", "Presupuestos", "Presupuesto", "PresupuestoDetalle", "PresupuestosDetalle", "presupuestosDetalle" })
+                foreach (var opt in new[]{ "presupuestos", "Presupuestos", "Presupuesto", "PresupuestoDetalle", "PresupuestosDetalle", "presupuestosDetalle", "Productos", "Producto", "productos" })
                 {
                     if (names.Contains(opt)) return opt;
                 }
@@ -52,6 +58,8 @@ public class PresupuestoRepository
 
             var det = findTable(tablaDet);
             tablaDet = det;
+
+            tablaProd = findTable(tablaProd);
 
             // Detectar columnas con PRAGMA table_info
             HashSet<string> colsDe(string tabla)
@@ -77,6 +85,24 @@ public class PresupuestoRepository
                 else if (detCols.Contains("id")) colDetProdId = "id"; // último recurso
             }
             if (!detCols.Contains(colDetCant) && detCols.Contains("Cantidad")) colDetCant = "Cantidad";
+
+            // Detectar columnas de la tabla de productos para los JOINs
+            var prodCols = colsDe(tablaProd);
+            if (!prodCols.Contains(colProdId))
+            {
+                if (prodCols.Contains("idProducto")) colProdId = "idProducto";
+                else if (prodCols.Contains("id")) colProdId = "id";
+            }
+            if (!prodCols.Contains(colProdDesc))
+            {
+                if (prodCols.Contains("Descripcion")) colProdDesc = "Descripcion";
+                else if (prodCols.Contains("nombre")) colProdDesc = "nombre";
+            }
+            if (!prodCols.Contains(colProdPrecio))
+            {
+                if (prodCols.Contains("Precio")) colProdPrecio = "Precio";
+                else if (prodCols.Contains("precioUnitario")) colProdPrecio = "precioUnitario";
+            }
         }
 
         // Crear nuevo presupuesto
@@ -141,9 +167,9 @@ public class PresupuestoRepository
             lector.Close();
 
             // Cargar los detalles (JOIN con Productos)
-            string sqlDetalle = $@"SELECT pd.{colDetCant}, pr.id, pr.descripcion, pr.precio
+            string sqlDetalle = $@"SELECT pd.{colDetCant}, pr.{colProdId}, pr.{colProdDesc}, pr.{colProdPrecio}
                                   FROM {tablaDet} pd
-                                  INNER JOIN Productos pr ON pr.id = pd.{colDetProdId}
+                                  INNER JOIN {tablaProd} pr ON pr.{colProdId} = pd.{colDetProdId}
                                   WHERE pd.{colDetPresId} = @id";
 
             using var cmdDet = new SqliteCommand(sqlDetalle, conexion);

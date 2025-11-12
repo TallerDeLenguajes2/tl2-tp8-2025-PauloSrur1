@@ -9,21 +9,35 @@ namespace Repositories
         private string cadenaConexion = "Data Source=Tienda.db;";
 
         // Configuración dinámica de nombres de tabla/columnas según el esquema real de la DB
-        private readonly string tabla = "Productos";
+        private string tabla = "Productos";
         private string colId = "idProducto";
         private string colDesc = "descripcion";
         private string colPrecio = "precio";
 
         public ProductoRepository()
         {
-            DetectColumns();
+            DetectSchema();
         }
 
-        private void DetectColumns()
+        private void DetectSchema()
         {
             using var conexion = new SqliteConnection(cadenaConexion);
             conexion.Open();
-            using var cmd = new SqliteCommand("PRAGMA table_info(Productos);", conexion);
+
+            // Detectar nombre real de la tabla de productos en sqlite_master
+            using (var cmdTables = new SqliteCommand("SELECT name FROM sqlite_master WHERE type='table'", conexion))
+            using (var r = cmdTables.ExecuteReader())
+            {
+                var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                while (r.Read()) names.Add(r.GetString(0));
+                foreach (var candidate in new[] { "Productos", "Producto", "productos", "producto" })
+                {
+                    if (names.Contains(candidate)) { tabla = candidate; break; }
+                }
+            }
+
+            // Detectar columnas reales
+            using var cmd = new SqliteCommand($"PRAGMA table_info({tabla});", conexion);
             using var reader = cmd.ExecuteReader();
             var cols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             while (reader.Read())
