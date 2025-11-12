@@ -1,0 +1,33 @@
+@model IEnumerable<Models.Producto>
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<h1 class="mb-3">Productos</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No hay productos cargados.</div>
+}
+else
+{
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Descripción</th>
+                <th class="text-end">Precio</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.IdProducto</td>
+                <td>@p.Descripcion</td>
+                <td class="text-end">@p.Precio</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

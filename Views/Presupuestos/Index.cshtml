@@ -1,0 +1,33 @@
+@model IEnumerable<Models.Presupuesto>
+@{
+    ViewData["Title"] = "Presupuestos";
+}
+
+<h1 class="mb-3">Presupuestos</h1>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No hay presupuestos cargados.</div>
+}
+else
+{
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Destinatario</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.IdPresupuesto</td>
+                <td>@p.NombreDestinatario</td>
+                <td>@p.FechaCreacion.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
