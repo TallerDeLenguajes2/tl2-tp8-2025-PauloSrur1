@@ -9,100 +9,35 @@ public class PresupuestoRepository
     {
         private string cadenaConexion = "Data Source=Tienda.db;";
 
-        // Nombres dinámicos de tablas/columnas según el esquema real
-        private string tablaPres = "Presupuestos";
-        private string colPresId = "idPresupuesto"; // fallback: id
-        private string colPresNombre = "nombreDestinatario"; // fallback: NombreDestinatario
-        private string colPresFecha = "fechaCreacion"; // fallback: FechaCreacion
+        // Esquema FIJO según tu base Tienda.db
+        private string tablaPres = "PresupuestosDetalle";
+        private string colPresId = "idPresupuesto";
+        private string colPresNombre = "NombreDestinatario";
+        private string colPresFecha = "FechaCreacion";
 
-        private string tablaDet = "PresupuestoDetalle"; // posibles: PresupuestosDetalle, presupuestosDetalle
+        private string tablaDet = "Detalle";
         private string colDetPresId = "idPresupuesto";
         private string colDetProdId = "idProducto";
         private string colDetCant = "cantidad";
 
-        // Información de la tabla de productos para JOINs de detalle
+        // Tabla de productos
         private string tablaProd = "Productos";
-        private string colProdId = "id"; // fallbacks: idProducto
-        private string colProdDesc = "descripcion"; // fallbacks: Descripcion, nombre
-        private string colProdPrecio = "precio"; // fallbacks: Precio, precioUnitario
+        private string colProdId = "id";
+        private string colProdDesc = "descripcion";
+        private string colProdPrecio = "precio";
 
-        public PresupuestoRepository()
+        public PresupuestoRepository(string? connectionString = null)
         {
-            DetectSchema();
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                cadenaConexion = connectionString;
+            }
+            // Esquema fijo: no necesitamos autodetección
         }
 
         private void DetectSchema()
         {
-            using var conexion = new SqliteConnection(cadenaConexion);
-            conexion.Open();
-
-            // Detectar nombres reales de tablas en sqlite_master
-            string findTable(string desired)
-            {
-                using var cmd = new SqliteCommand("SELECT name FROM sqlite_master WHERE type='table'", conexion);
-                using var r = cmd.ExecuteReader();
-                var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                while (r.Read()) names.Add(r.GetString(0));
-                if (names.Contains(desired)) return desired;
-                // Variantes comunes
-                foreach (var opt in new[]{ "presupuestos", "Presupuestos", "Presupuesto", "PresupuestoDetalle", "PresupuestosDetalle", "presupuestosDetalle", "Productos", "Producto", "productos" })
-                {
-                    if (names.Contains(opt)) return opt;
-                }
-                return desired; // por defecto
-            }
-
-            // Intentar preservar las deseadas pero aceptar variantes existentes
-            var pres = findTable(tablaPres);
-            if (!pres.Equals(tablaDet, StringComparison.OrdinalIgnoreCase)) tablaPres = pres;
-
-            var det = findTable(tablaDet);
-            tablaDet = det;
-
-            tablaProd = findTable(tablaProd);
-
-            // Detectar columnas con PRAGMA table_info
-            HashSet<string> colsDe(string tabla)
-            {
-                using var cmd = new SqliteCommand($"PRAGMA table_info({tabla});", conexion);
-                using var rdr = cmd.ExecuteReader();
-                var cols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                while (rdr.Read()) cols.Add(rdr.GetString(1));
-                return cols;
-            }
-
-            var presCols = colsDe(tablaPres);
-            if (!presCols.Contains(colPresId) && presCols.Contains("id")) colPresId = "id";
-            if (!presCols.Contains(colPresNombre) && presCols.Contains("NombreDestinatario")) colPresNombre = "NombreDestinatario";
-            if (!presCols.Contains(colPresFecha) && presCols.Contains("FechaCreacion")) colPresFecha = "FechaCreacion";
-
-            var detCols = colsDe(tablaDet);
-            if (!detCols.Contains(colDetPresId) && detCols.Contains("IdPresupuesto")) colDetPresId = "IdPresupuesto";
-            if (!detCols.Contains(colDetProdId))
-            {
-                if (detCols.Contains("IdProducto")) colDetProdId = "IdProducto";
-                else if (detCols.Contains("productoId")) colDetProdId = "productoId";
-                else if (detCols.Contains("id")) colDetProdId = "id"; // último recurso
-            }
-            if (!detCols.Contains(colDetCant) && detCols.Contains("Cantidad")) colDetCant = "Cantidad";
-
-            // Detectar columnas de la tabla de productos para los JOINs
-            var prodCols = colsDe(tablaProd);
-            if (!prodCols.Contains(colProdId))
-            {
-                if (prodCols.Contains("idProducto")) colProdId = "idProducto";
-                else if (prodCols.Contains("id")) colProdId = "id";
-            }
-            if (!prodCols.Contains(colProdDesc))
-            {
-                if (prodCols.Contains("Descripcion")) colProdDesc = "Descripcion";
-                else if (prodCols.Contains("nombre")) colProdDesc = "nombre";
-            }
-            if (!prodCols.Contains(colProdPrecio))
-            {
-                if (prodCols.Contains("Precio")) colProdPrecio = "Precio";
-                else if (prodCols.Contains("precioUnitario")) colProdPrecio = "precioUnitario";
-            }
+            // Intencionalmente vacío: usamos el esquema fijo de arriba para tu DB
         }
 
         // Crear nuevo presupuesto

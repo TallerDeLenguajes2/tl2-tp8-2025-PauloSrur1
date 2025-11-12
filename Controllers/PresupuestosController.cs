@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Models;
 using Repositories;
 
@@ -8,9 +9,10 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
     {
         private readonly PresupuestoRepository _presupuestoRepository;
 
-        public PresupuestosController()
+        public PresupuestosController(IConfiguration config)
         {
-            _presupuestoRepository = new PresupuestoRepository();
+            var cs = config.GetConnectionString("SQLite") ?? "Data Source=Tienda.db;";
+            _presupuestoRepository = new PresupuestoRepository(cs);
         }
 
         // GET: /Presupuestos
@@ -20,5 +22,19 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
             List<Presupuesto> presupuestos = _presupuestoRepository.Listar();
             return View(presupuestos);
         }
+
+        // GET: /Presupuestos/Details/{id}
+        [HttpGet]
+        public IActionResult Details(int id)
+        {
+            var presupuesto = _presupuestoRepository.ObtenerPorId(id);
+            if (presupuesto == null)
+            {
+                return NotFound();
+            }
+            return View(presupuesto);
+        }
     }
 }
+
+

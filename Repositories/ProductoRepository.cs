@@ -10,12 +10,16 @@ namespace Repositories
 
         // Configuración dinámica de nombres de tabla/columnas según el esquema real de la DB
         private string tabla = "Productos";
-        private string colId = "idProducto";
+        private string colId = "id";
         private string colDesc = "descripcion";
         private string colPrecio = "precio";
 
-        public ProductoRepository()
+        public ProductoRepository(string? connectionString = null)
         {
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                cadenaConexion = connectionString;
+            }
             DetectSchema();
         }
 

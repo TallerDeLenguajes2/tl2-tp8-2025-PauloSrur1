@@ -17,6 +17,7 @@ else
                 <th>Id</th>
                 <th>Destinatario</th>
                 <th>Fecha</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -26,6 +27,9 @@ else
                 <td>@p.IdPresupuesto</td>
                 <td>@p.NombreDestinatario</td>
                 <td>@p.FechaCreacion.ToString("yyyy-MM-dd")</td>
+                <td class="text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Details" asp-route-id="@p.IdPresupuesto">Ver</a>
+                </td>
             </tr>
         }
         </tbody>
