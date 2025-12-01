@@ -1,0 +1,33 @@
+@model tl2_tp8_2025_PauloSrur1.ViewModels.AgregarProductoViewModel
+@{
+    ViewData["Title"] = "Agregar Producto al Presupuesto";
+}
+<h2>Agregar Producto al Presupuesto Nro @Model.IdPresupuesto</h2>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="AgregarProducto" method="post">
+            <input type="hidden" asp-for="IdPresupuesto" />
+
+            <div class="mb-3">
+                <label asp-for="IdProducto" class="form-label"></label>
+                <select asp-for="IdProducto" asp-items="@Model.ListaProductos" class="form-select">
+                    <option value="">-- Seleccionar Producto --</option>
+                </select>
+                <span asp-validation-for="IdProducto" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Cantidad" class="form-label"></label>
+                <input asp-for="Cantidad" class="form-control" />
+                <span asp-validation-for="Cantidad" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Añadir Producto</button>
+            <a class="btn btn-secondary" asp-action="Details" asp-route-id="@Model.IdPresupuesto">Volver</a>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

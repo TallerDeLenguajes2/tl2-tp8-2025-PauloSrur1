@@ -1,4 +1,4 @@
-@model Models.Producto
+@model tl2_tp8_2025_PauloSrur1.ViewModels.ProductoViewModel
 @{
     ViewData["Title"] = "Editar producto";
 }
@@ -21,3 +21,6 @@
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

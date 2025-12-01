@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Models;
 using Repositories;
+using tl2_tp8_2025_PauloSrur1.ViewModels;
 
 namespace tl2_tp8_2025_PauloSrur1.Controllers
 {
@@ -26,27 +27,20 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new Producto());
+            return View(new ProductoViewModel());
         }
 
         // POST: /Productos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Producto model)
+        public IActionResult Create(ProductoViewModel vm)
         {
-            if (string.IsNullOrWhiteSpace(model.Descripcion))
-            {
-                ModelState.AddModelError(nameof(model.Descripcion), "La descripción es obligatoria");
-            }
-            if (model.Precio <= 0)
-            {
-                ModelState.AddModelError(nameof(model.Precio), "El precio debe ser mayor a 0");
-            }
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return View(vm);
             }
 
+            var model = new Producto { Descripcion = vm.Descripcion ?? string.Empty, Precio = vm.Precio };
             _productoRepository.Crear(model);
             return RedirectToAction(nameof(Index));
         }
@@ -57,31 +51,19 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         {
             var producto = _productoRepository.ObtenerPorId(id);
             if (producto == null) return NotFound();
-            return View(producto);
+            var vm = new ProductoViewModel { IdProducto = producto.IdProducto, Descripcion = producto.Descripcion, Precio = producto.Precio };
+            return View(vm);
         }
 
         // POST: /Productos/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Producto model)
+        public IActionResult Edit(int id, ProductoViewModel vm)
         {
-            if (id != model.IdProducto)
-            {
-                return BadRequest();
-            }
-            if (string.IsNullOrWhiteSpace(model.Descripcion))
-            {
-                ModelState.AddModelError(nameof(model.Descripcion), "La descripción es obligatoria");
-            }
-            if (model.Precio <= 0)
-            {
-                ModelState.AddModelError(nameof(model.Precio), "El precio debe ser mayor a 0");
-            }
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+            if (id != vm.IdProducto) return BadRequest();
+            if (!ModelState.IsValid) return View(vm);
 
+            var model = new Producto { IdProducto = vm.IdProducto, Descripcion = vm.Descripcion ?? string.Empty, Precio = vm.Precio };
             _productoRepository.Modificar(model);
             return RedirectToAction(nameof(Index));
         }
