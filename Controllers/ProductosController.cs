@@ -1,24 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Models;
-using Repositories;
 using tl2_tp8_2025_PauloSrur1.ViewModels;
+using tl2_tp8_2025_PauloSrur1.Interfaces;
 
 namespace tl2_tp8_2025_PauloSrur1.Controllers
 {
     public class ProductosController : Controller
     {
-        private readonly ProductoRepository _productoRepository;
+        private readonly IProductoRepository _productoRepository;
+        private readonly IAuthenticationService _authService;
 
-        public ProductosController(IConfiguration config)
+        public ProductosController(IProductoRepository repo, IAuthenticationService authService)
         {
-            var cs = config.GetConnectionString("SQLite") ?? "Data Source=Tienda.db;";
-            _productoRepository = new ProductoRepository(cs);
+            _productoRepository = repo;
+            _authService = authService;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             List<Producto> productos = _productoRepository.Listar();
             return View(productos);
         }
@@ -27,6 +29,7 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Create()
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             return View(new ProductoViewModel());
         }
 
@@ -35,6 +38,7 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ProductoViewModel vm)
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             if (!ModelState.IsValid)
             {
                 return View(vm);
@@ -49,6 +53,7 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             var producto = _productoRepository.ObtenerPorId(id);
             if (producto == null) return NotFound();
             var vm = new ProductoViewModel { IdProducto = producto.IdProducto, Descripcion = producto.Descripcion, Precio = producto.Precio };
@@ -60,6 +65,7 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, ProductoViewModel vm)
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             if (id != vm.IdProducto) return BadRequest();
             if (!ModelState.IsValid) return View(vm);
 
@@ -72,6 +78,7 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             var producto = _productoRepository.ObtenerPorId(id);
             if (producto == null) return NotFound();
             return View(producto);
@@ -82,8 +89,21 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int IdProducto)
         {
+            var chk = CheckAdminPermissions(); if (chk != null) return chk;
             _productoRepository.Eliminar(IdProducto);
             return RedirectToAction(nameof(Index));
+        }
+
+        private IActionResult? CheckAdminPermissions()
+        {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
+            return null;
+        }
+
+        public IActionResult AccesoDenegado()
+        {
+            return View();
         }
     }
 }

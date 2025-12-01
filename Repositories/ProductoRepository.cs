@@ -2,9 +2,10 @@ using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 using Models;
 
+using tl2_tp8_2025_PauloSrur1.Interfaces;
 namespace Repositories
 {
-    public class ProductoRepository
+    public class ProductoRepository : IProductoRepository
     {
         private string cadenaConexion = "Data Source=Tienda.db;";
 

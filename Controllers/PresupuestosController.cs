@@ -1,28 +1,34 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Models;
-using Repositories;
 using tl2_tp8_2025_PauloSrur1.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using tl2_tp8_2025_PauloSrur1.Interfaces;
 
 namespace tl2_tp8_2025_PauloSrur1.Controllers
 {
     public class PresupuestosController : Controller
     {
-        private readonly PresupuestoRepository _presupuestoRepository;
-        private readonly ProductoRepository _productoRepository;
+        private readonly IPresupuestoRepository _presupuestoRepository;
+        private readonly IProductoRepository _productoRepository;
+        private readonly IAuthenticationService _authService;
 
-        public PresupuestosController(IConfiguration config)
+        public PresupuestosController(IPresupuestoRepository presupuestoRepository,
+                                      IProductoRepository productoRepository,
+                                      IAuthenticationService authService)
         {
-            var cs = config.GetConnectionString("SQLite") ?? "Data Source=Tienda.db;";
-            _presupuestoRepository = new PresupuestoRepository(cs);
-            _productoRepository = new ProductoRepository(cs);
+            _presupuestoRepository = presupuestoRepository;
+            _productoRepository = productoRepository;
+            _authService = authService;
         }
 
         // GET: /Presupuestos
         [HttpGet]
         public IActionResult Index()
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!(_authService.HasAccessLevel("Administrador") || _authService.HasAccessLevel("Cliente")))
+                return RedirectToAction(nameof(AccesoDenegado));
             List<Presupuesto> presupuestos = _presupuestoRepository.Listar();
             return View(presupuestos);
         }
@@ -31,6 +37,9 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!(_authService.HasAccessLevel("Administrador") || _authService.HasAccessLevel("Cliente")))
+                return RedirectToAction(nameof(AccesoDenegado));
             var presupuesto = _presupuestoRepository.ObtenerPorId(id);
             if (presupuesto == null)
             {
@@ -43,6 +52,8 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Create()
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
             var p = new PresupuestoViewModel { FechaCreacion = DateTime.Today };
             return View(p);
         }
@@ -52,6 +63,8 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(PresupuestoViewModel vm)
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
             if (vm.FechaCreacion.Date > DateTime.Today)
             {
                 ModelState.AddModelError(nameof(vm.FechaCreacion), "La fecha no puede ser futura.");
@@ -67,6 +80,8 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
             var presupuesto = _presupuestoRepository.ObtenerPorId(id);
             if (presupuesto == null) return NotFound();
             var vm = new PresupuestoViewModel { IdPresupuesto = presupuesto.IdPresupuesto, NombreDestinatario = presupuesto.NombreDestinatario, FechaCreacion = presupuesto.FechaCreacion };
@@ -78,6 +93,8 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, PresupuestoViewModel vm)
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
             if (id != vm.IdPresupuesto) return BadRequest();
             if (vm.FechaCreacion.Date > DateTime.Today)
             {
@@ -94,6 +111,8 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
             var presupuesto = _presupuestoRepository.ObtenerPorId(id);
             if (presupuesto == null) return NotFound();
             return View(presupuesto);
@@ -104,19 +123,30 @@ namespace tl2_tp8_2025_PauloSrur1.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int IdPresupuesto)
         {
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
             _presupuestoRepository.Eliminar(IdPresupuesto);
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult AccesoDenegado()
+        {
+            return View();
         }
 
         // GET: /Presupuestos/AgregarProducto/{id}
         [HttpGet]
         public IActionResult AgregarProducto(int id)
         {
+            // Solo administradores pueden modificar presupuestos
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
+
             var productos = _productoRepository.Listar();
             var vm = new AgregarProductoViewModel
             {
                 IdPresupuesto = id,
-ListaProductos = new SelectList(productos, nameof(Producto.IdProducto), nameof(Producto.Descripcion))
+                ListaProductos = new SelectList(productos, nameof(Producto.IdProducto), nameof(Producto.Descripcion))
             };
             return View(vm);
         }
@@ -126,10 +156,14 @@ ListaProductos = new SelectList(productos, nameof(Producto.IdProducto), nameof(P
         [ValidateAntiForgeryToken]
         public IActionResult AgregarProducto(AgregarProductoViewModel vm)
         {
+            // Solo administradores pueden modificar presupuestos
+            if (!_authService.IsAuthenticated()) return RedirectToAction("Index", "Login");
+            if (!_authService.HasAccessLevel("Administrador")) return RedirectToAction(nameof(AccesoDenegado));
+
             if (!ModelState.IsValid)
             {
                 var productos = _productoRepository.Listar();
-vm.ListaProductos = new SelectList(productos, nameof(Producto.IdProducto), nameof(Producto.Descripcion));
+                vm.ListaProductos = new SelectList(productos, nameof(Producto.IdProducto), nameof(Producto.Descripcion));
                 return View(vm);
             }
 

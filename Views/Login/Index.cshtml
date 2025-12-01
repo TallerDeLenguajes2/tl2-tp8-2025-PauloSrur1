@@ -1,0 +1,20 @@
+@model tl2_tp8_2025_PauloSrur1.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+<h2>Login</h2>
+<form asp-action="Login" method="post" class="mt-3" style="max-width:420px;">
+    <div class="mb-3">
+        <label class="form-label" for="Username">Usuario</label>
+        <input asp-for="Username" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="Password">Contraseña</label>
+        <input asp-for="Password" class="form-control" type="password" />
+    </div>
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+    <button type="submit" class="btn btn-primary">Ingresar</button>
+</form>
